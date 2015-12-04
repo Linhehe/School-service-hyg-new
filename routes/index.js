@@ -52,6 +52,7 @@ require('../models/SignIns');
 require('../models/Vacations');
 require('../models/Messages');
 require('../models/Excels');
+require('../models/Versions');
 
 //在数据库中开辟一块区域用于存储模型Myclass的值
 var Student = mongoose.model('Student');
@@ -69,6 +70,7 @@ var Profession = mongoose.model('Profession');
 var College = mongoose.model('College');
 var School = mongoose.model('School');
 var Excel = mongoose.model('Excel');
+var Version = mongoose.model('Version');
 
 
 var obj = xlsx.parse('public/files/kcb.xls');
@@ -1234,85 +1236,168 @@ router.post('/SignOut', function (req, res, next) {
     });
 
 
-    function Ctnot(startTime, endTime, signInTime, signOutTime) {
-        //
-        if (startTime && endTime && signInTime && signOutTime) {
-            if (((signInTime.getHours() - startTime.getHours()) * 60 + (signInTime.getMinutes() - startTime.getMinutes())) <= 25) {
-                c = -1;
-                return c;
-            } else {
-                // a: 应该上课的节数
-                var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
-                // b: 实际上课的节数
-                var b = ((signOutTime.getHours() - signInTime.getHours()) * 60 + (signOutTime.getMinutes() - signInTime.getMinutes())) / 55;
-                //
-                //var c = parseInt(a)-parseInt(b);
-                var c = (1 - Math.round(b) / parseInt(a)) * parseInt(a);
-                return c;
-            }
-        } else if (startTime && endTime && signInTime) {
-            // a: 应该上课的节数
-            var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
-            // b: 实际上课的节数
-            var b = 0;
-            //
-            //var c = parseInt(a)-parseInt(b);
-            var c = parseInt(a);
-            return c;
-        } else if (startTime && endTime && signOutTime) {
-            // a: 应该上课的节数
-            var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
-            // b: 实际上课的节数
-            var b = 0;
-            //
-            //var c = parseInt(a)-parseInt(b);
-            var c = parseInt(a);
-            return c;
-        } else {
-            // a: 应该上课的节数
-            var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
-            // b: 实际上课的节数
-            var b = 0;
-            //
-            //var c = parseInt(a)-parseInt(b);
-            var c = parseInt(a);
-            return c;
-        }
-    }
-
-    //var rule5 = new schedule.RecurrenceRule();
-    //
-    //rule5.hour = 23;
-    //rule5.minute = 30;
-    //
-    //var j5 = schedule.scheduleJob(rule5, function () {
+    //function Ctnot(startTime, endTime, signInTime, signOutTime) {
     //    //
-    //    var today_Begin = new Date();
-    //    today_Begin.setHours(7, 00, 00);
-    //    var today_End = new Date();
-    //    today_End.setHours(23, 00, 00);
-    //    //
-    //    SignIn.find({
-    //        BeginSubjectDate: {$gte: today_Begin},
-    //        EndSubjectDate: {$lte: today_End},
-    //        Ctnot: 0
-    //    }, function (err, signs) {
+    //    if (startTime && endTime && signInTime && signOutTime) {
+    //        if (((signInTime.getHours() - startTime.getHours()) * 60 + (signInTime.getMinutes() - startTime.getMinutes())) <= 25) {
+    //            c = -1;
+    //            return c;
+    //        } else {
+    //            // a: 应该上课的节数
+    //            var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
+    //            // b: 实际上课的节数
+    //            var b = ((signOutTime.getHours() - signInTime.getHours()) * 60 + (signOutTime.getMinutes() - signInTime.getMinutes())) / 55;
+    //            //
+    //            //var c = parseInt(a)-parseInt(b);
+    //            var c = (1 - Math.round(b) / parseInt(a)) * parseInt(a);
+    //            return c;
+    //        }
+    //    } else if (startTime && endTime && signInTime) {
+    //        // a: 应该上课的节数
+    //        var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
+    //        // b: 实际上课的节数
+    //        var b = 0;
     //        //
-    //        signs.forEach(function (item) {
-    //            item.Ctnot = Ctnot(item.BeginSubjectDate, item.EndSubjectDate, item.FirstSignInTime, item.SecondSignInTime);
-    //            //console.log(Ctnot(item.BeginSubjectDate, item.EndSubjectDate, item.FirstSignInTime, item.SecondSignInTime));
-    //            item.save();
-    //        })
-    //    });
-    //});
+    //        //var c = parseInt(a)-parseInt(b);
+    //        var c = parseInt(a);
+    //        return c;
+    //    } else if (startTime && endTime && signOutTime) {
+    //        // a: 应该上课的节数
+    //        var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
+    //        // b: 实际上课的节数
+    //        var b = 0;
+    //        //
+    //        //var c = parseInt(a)-parseInt(b);
+    //        var c = parseInt(a);
+    //        return c;
+    //    } else {
+    //        // a: 应该上课的节数
+    //        var a = ((endTime.getHours() - startTime.getHours()) * 60 + (endTime.getMinutes() - startTime.getMinutes())) / 55;
+    //        // b: 实际上课的节数
+    //        var b = 0;
+    //        //
+    //        //var c = parseInt(a)-parseInt(b);
+    //        var c = parseInt(a);
+    //        return c;
+    //    }
+    //}
+function CountNumOfSubject(Begin,End){
+    var result = ((End.getHours() - Begin.getHours())*60 + (End.getMinutes()-Begin.getMinutes())) / 45;
+    return parseInt(result);
+}
+function CountNumOfSign(Begin,End,SingIn,SignOut){
+    var result = ((End.getHours() - Begin.getHours())*60 + (End.getMinutes()-Begin.getMinutes())) -
+        ((SignOut.getHours() - SingIn.getHours())*60 + (SignOut.getMinutes()-SingIn.getMinutes()));
+    //result = result / 45 ? (result/45) : 1;
+    result = Math.ceil(result);
+    if(result > CountNumOfSubject(Begin,End)){
+        result = CountNumOfSubject(Begin,End);
+    }
+    return result;
+}
 
-// 学委查看考勤状况
-    router.get('/SignInState', function (req, res, next) {
+    var schedule = require('node-schedule');
+    var rule5 = new schedule.RecurrenceRule();
 
+    rule5.hour = 23;
+    rule5.minute = 30;
+
+    var j5 = schedule.scheduleJob(rule5, function () {
+        //
+        var today_Begin = new Date();
+        today_Begin.setHours(7, 00, 00);
+        var today_End = new Date();
+        today_End.setHours(23, 00, 00);
+        //
+        SignIn.find({})
+            .populate('Subject')
+            .exec(function(err,signs){
+                if(err){
+                    next(err);
+                } else{
+                    if(signs){
+                        signs.forEach(function(item){
+                            var NumOfSub = CountNumOfSubject(item.Subject.BeginSubjectDate,item.Subject.EndSubjectDate);
+                            if(item.FirstSignInState == 0 || item.SecondSignInState == 0){
+                                // 全矿
+                                item.Ctnot = NumOfSub;
+                                item.save();
+                            }
+                            else if(item.FirstSignInState == 2 && item.SecondSignInState == 1){
+                                // 迟到
+                                item.Ctnot = -1;
+                                item.save();
+                            }
+                            else if(item.FirstSignInState == 1 && item.SecondSignInState == 1){
+                                // 正常
+                            }
+                            else{
+                                // 计算旷课
+                                item.Ctnot = CountNumOfSign(item.Subject.BeginSubjectDate,item.Subject.EndSubjectDate,item.FirstSignInTime,item.SecondSignInState);
+                                item.save();
+                            }
+                        });
+                    }
+                }
+            });
+        //Subject.find({BeginSubjectDate:{$gte: today_Begin}, EndSubjectDate:{$lte: today_End}}, function(err,subjects){
+        //    if(err){
+        //        console.error(err);
+        //    } else{
+        //        if(subjects.length != 0){
+        //            subjects.forEach(function(item){
+        //                SignIn.find({Subject: item._id})
+        //                    .populate('Subject')
+        //                    .exec(function(err,signs){
+        //                        if(err){
+        //                            console.error(err);
+        //                        } else{
+        //                            if(signs != null){
+        //                                signs.forEach(function(sign){
+        //                                    sign.Ctnot = Ctnot();
+        //                                });
+        //                            }
+        //                        }
+        //                    });
+        //            });
+        //        }
+        //    }
+        //})
     });
 
+// 学委查看考勤状况
+router.get('/SubjectNameInfo',function(req,res,next){
 
-    module.exports = router;
+    Subject.distinct('SubjectName',{Class:req.query.ClassId},function(err,doc){
+        if(err) next(err);
+        res.jsonp(doc);
+    });
+});
+router.get('/SubjectInfo',function(req,res,next){
+    Subject.find({SubjectName:req.query.SubjectName,Class:req.query.ClassId},function(err,doc){
+        //
+        if(err) next(err);
+        res.jsonp(doc);
+        //
+    });
+});
+router.get('/SignInInfo',function(req,res,next){
+    SignIn.find({Subject:req.query.Subject},function(err,doc){
+        if(err) next(err);
+        res.jsonp(doc);
+    }).populate('Student')
+});
+
+router.get('/versions', function (req, res, next) {
+    Version.findOne({}, function (error, doc) {
+        //
+        if (error) next(error);
+        res.jsonp(doc);
+        //
+    });
+});
+
+module.exports = router;
 
 //1161,1990
 
